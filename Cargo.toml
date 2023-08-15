@@ -16,3 +16,6 @@ tokio = "1.31.0"
 tracing = "0.1.37"
 poise = "0.5.5"
 shuttle-poise = "0.23.0"
+emojis = "0.6.0"
+sqlx = { version = "0.7.1", features = ["postgres", "uuid", "runtime-tokio-rustls"] }
+shuttle-shared-db = { version = "0.23.0", features = ["sqlx", "postgres-rustls"] }

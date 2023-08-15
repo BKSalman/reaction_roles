@@ -84,15 +84,15 @@
             alias lcw='RUST_LOG=musawarah=debug,tower=debug cargo watch -x run'
 
             # start dev database if available, if not create, and run it on port 5445
-            docker start react-roles-dev || \
+            docker start reaction-roles-dev || \
               docker run \
-              --name react-roles-dev \
+              --name reaction-roles-dev \
               -p 5445:5432 \
-              -e POSTGRES_PASSWORD=react-roles-dev \
+              -e POSTGRES_PASSWORD=123 \
               -d postgres
 
             # add DATABASE_URL to .env file if not already there
-            grep DATABASE_URL .env || echo "DATABASE_URL=postgres://postgres:react-roles-dev@localhost:5445/postgres" >> .env
+            # grep DATABASE_URL .env || echo "DATABASE_URL=postgres://postgres:123@localhost:5445/postgres" >> .env
 
             # export environment variables
             export $(cat .env)

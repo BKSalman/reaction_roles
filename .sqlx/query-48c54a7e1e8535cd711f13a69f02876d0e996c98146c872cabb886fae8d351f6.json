@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "CREATE TABLE IF NOT EXISTS reaction_roles (\n    message_link TEXT NOT NULL,\n    emoji_type emoji_types NOT NULL,\n    reaction_emoji_id TEXT,\n    reaction_emoji_name TEXT NOT NULL,\n    role_id TEXT NOT NULL\n);",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "48c54a7e1e8535cd711f13a69f02876d0e996c98146c872cabb886fae8d351f6"
+}

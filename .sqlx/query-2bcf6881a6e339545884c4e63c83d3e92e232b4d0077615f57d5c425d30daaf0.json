@@ -1,0 +1,12 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DO $$\n    BEGIN\n        IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'emoji_types') THEN\n            CREATE TYPE emoji_types AS ENUM ( 'unicode', 'emote' );\n        END IF;\n    END$$;",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": []
+    },
+    "nullable": []
+  },
+  "hash": "2bcf6881a6e339545884c4e63c83d3e92e232b4d0077615f57d5c425d30daaf0"
+}

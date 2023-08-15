@@ -1,0 +1,35 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT message_link, reaction_emoji_name, reaction_emoji_id FROM reaction_roles WHERE message_link = $1 AND reaction_emoji_name = $2",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "message_link",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 1,
+        "name": "reaction_emoji_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "reaction_emoji_id",
+        "type_info": "Text"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "a8811bb6852dd8866073c61a71632a43ca49752a128aaf099b6a3a8511c3137f"
+}

@@ -1,9 +1,11 @@
 use crate::EmojiType;
+use crate::ReactionRole;
 use crate::ReturnReactionId;
 use poise::serenity_prelude::{self as serenity, ArgumentConvert, Emoji, ReactionType};
 
 use crate::{Context, Error};
 
+/// say hi to the bot :)
 #[poise::command(slash_command, required_permissions = "ADMINISTRATOR")]
 pub async fn hello(ctx: Context<'_>) -> Result<(), Error> {
     ctx.say("🤨🤚").await?;
@@ -93,9 +95,53 @@ pub async fn add_reaction_role(
     Ok(())
 }
 
+/// list added reaction role of a  message
+#[poise::command(slash_command)]
+pub async fn list_reaction_role(ctx: Context<'_>, msg: serenity::Message) -> Result<(), Error> {
+    let pool = ctx.data().db_pool.clone();
+
+    let message_link = msg.link_ensured(&ctx).await;
+
+    tracing::info!("message link: {}", message_link);
+
+    ctx.defer_ephemeral().await?;
+
+    let reaction_roles = sqlx::query_as!(
+        ReactionRole,
+        r#"SELECT rr.id, rr.message_link, rr.role_id, rr.reaction_emoji_name, rr.reaction_emoji_id FROM reaction_roles rr WHERE rr.message_link = $1"#,
+        message_link
+    )
+    .fetch_all(&pool)
+    .await?;
+
+    ctx.send(move |r| {
+        let message = reaction_roles
+            .into_iter()
+            .map(|rr| {
+                format!(
+                    "- reaction {emoji} for <@&{role_id}>",
+                    emoji = rr.reaction_emoji_name,
+                    role_id = rr.role_id,
+                )
+            })
+            .collect::<Vec<String>>()
+            .join("\n");
+
+        if message.is_empty() {
+            r.reply(true).content("Message has no reaction roles")
+        } else {
+            r.reply(true).content(message)
+        }
+    })
+    .await?;
+
+    Ok(())
+}
+
 /// ping bot
 #[poise::command(prefix_command, slash_command)]
 pub async fn ping(ctx: Context<'_>) -> Result<(), Error> {
-    ctx.say("Pong! 🤨🤚").await?;
+    let time = chrono::Utc::now().timestamp_millis() - ctx.created_at().timestamp_millis();
+    ctx.say(format!("Pong! {time}ms latency")).await?;
     Ok(())
 }

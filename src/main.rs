@@ -1,11 +1,11 @@
-use reaction_roles::ReturnRoleId;
+use reaction_roles::{ReturnRoleId, commands::list_reaction_role};
 use anyhow::anyhow;
 use poise::{serenity_prelude::GatewayIntents, PrefixFrameworkOptions};
 use reaction_roles::{
     commands::{add_reaction_role, hello, ping},
     Data,
 };
-use reaction_roles::{ReturnReactionId};
+use reaction_roles::ReturnReactionId;
 use shuttle_runtime::CustomError;
 use shuttle_secrets::SecretStore;
 use sqlx::PgPool;
@@ -30,7 +30,7 @@ async fn serenity(
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            commands: vec![hello(), ping(), add_reaction_role()],
+            commands: vec![hello(), ping(), add_reaction_role(), list_reaction_role()],
             prefix_options: PrefixFrameworkOptions {
                 prefix: Some(String::from("!")),
                 ..Default::default()
@@ -67,10 +67,6 @@ async fn serenity(
                                 .fetch_one(&pool).await?;
 
                             tracing::info!("created reaction role with id: {}", reaction_role_id.id);
-
-                            let user = add_reaction.user(&ctx).await?;
-
-                            tracing::info!("{:#?}", user);
 
                             let message_link = message.link_ensured(&ctx).await;
                             

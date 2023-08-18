@@ -19,7 +19,6 @@ pub enum EmojiType {
 #[derive(Debug, FromRow)]
 pub struct ReactionUser {
     /// user id in discord
-    #[sqlx(rename = "user_discord_id")]
     pub id: String,
     pub username: String,
 }
@@ -27,8 +26,7 @@ pub struct ReactionUser {
 #[derive(Debug, FromRow)]
 pub struct ReactionRole {
     pub id: i32,
-    #[sqlx(flatten)]
-    pub reaction_user: ReactionUser,
+    pub role_id: String,
     pub message_link: String,
     pub reaction_emoji_name: String,
     pub reaction_emoji_id: Option<String>,

@@ -1,5 +1,7 @@
 use crate::EmojiType;
+use crate::ReturnReactionId;
 use poise::serenity_prelude::{self as serenity, ArgumentConvert, Emoji, ReactionType};
+use uuid::Uuid;
 
 use crate::{Context, Error};
 
@@ -42,30 +44,46 @@ pub async fn add_reaction_role(
 
     let reaction = msg.react(ctx, reaction_type).await?;
 
+    let message_link = msg.link_ensured(&ctx).await;
+
     if matches!(reaction.emoji, ReactionType::Unicode(_)) {
-        sqlx::query!(
-            r#"INSERT INTO reaction_roles ( message_link, emoji_type, reaction_emoji_name, role_id ) VALUES ( $1, $2, $3, $4 ) "#,
-            msg.link(),
-            EmojiType::Unicode as _,
-            reaction.emoji.to_string(),
-            role.id.to_string(),
-        ).execute(&pool).await?;
+        let reaction_roles_id = sqlx::query_as::<sqlx::Postgres, ReturnReactionId>(
+            r#"INSERT INTO reaction_roles ( id, message_link, emoji_type, reaction_emoji_name, role_id ) VALUES ( $1, $2, $3, $4, $5 ) RETURNING id"#
+        )
+        .bind(Uuid::now_v7())
+        .bind(message_link.clone())
+        .bind(EmojiType::Unicode)
+        .bind(reaction.emoji.to_string())
+        .bind(role.id.to_string())
+        .fetch_one(&pool).await?;
+
+        tracing::info!(
+            "created new reaction role with id: {}",
+            reaction_roles_id.id
+        );
     } else {
-        sqlx::query!(
-            r#"INSERT INTO reaction_roles ( message_link, emoji_type, reaction_emoji_id, reaction_emoji_name, role_id ) VALUES ( $1, $2, $3, $4, $5 ) "#,
-            msg.link(),
-            EmojiType::Emote as _,
-            emoji_id
-                .ok_or(anyhow::anyhow!("failed to get emoji id"))?,
-            reaction.emoji.to_string(),
-            role.id.to_string(),
-        ).execute(&pool).await?;
+        let message_link = msg.link_ensured(&ctx).await;
+        let reaction_roles_id = sqlx::query_as::<sqlx::Postgres, ReturnReactionId>(
+            r#"INSERT INTO reaction_roles ( id, message_link, emoji_type, reaction_emoji_name, reaction_emoji_id, role_id ) VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING id"#,
+        )
+        .bind(Uuid::now_v7())
+        .bind(message_link)
+        .bind(EmojiType::Emote)
+        .bind(reaction.emoji.to_string())
+        .bind(emoji_id.expect("emotes should have an id"))
+        .bind(role.id.to_string())
+        .fetch_one(&pool).await?;
+
+        tracing::info!(
+            "created new reaction role with id: {}",
+            reaction_roles_id.id
+        );
     }
 
     ctx.send(move |r| {
         r.reply(true).content(format!(
             "added role: {role} with emoji: {emoji} to message: {}",
-            msg.link()
+            message_link
         ))
     })
     .await?;

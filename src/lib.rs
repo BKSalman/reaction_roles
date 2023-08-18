@@ -1,4 +1,5 @@
 use sqlx::{FromRow, PgPool};
+use uuid::Uuid;
 
 pub mod commands;
 
@@ -17,8 +18,34 @@ pub enum EmojiType {
 }
 
 #[derive(Debug, FromRow)]
+pub struct ReactionUser {
+    /// user id in discord
+    #[sqlx(rename = "user_discord_id")]
+    pub id: String,
+    pub username: String,
+}
+
+#[derive(Debug, FromRow)]
 pub struct ReactionRole {
+    pub id: Uuid,
+    #[sqlx(flatten)]
+    pub reaction_user: ReactionUser,
     pub message_link: String,
     pub reaction_emoji_name: String,
     pub reaction_emoji_id: Option<String>,
+}
+
+#[derive(Debug, FromRow)]
+pub struct ReturnReactionId {
+    pub id: Uuid,
+}
+
+#[derive(Debug, FromRow)]
+pub struct ReturnRoleId {
+    pub role_id: String,
+}
+
+#[derive(Debug, FromRow)]
+pub struct ReturnUserId {
+    pub id: String,
 }

@@ -92,7 +92,7 @@
               -d postgres
 
             # add DATABASE_URL to .env file if not already there
-            # grep DATABASE_URL .env || echo "DATABASE_URL=postgres://postgres:123@localhost:5445/postgres" >> .env
+            grep DATABASE_URL .env || echo "DATABASE_URL=postgres://postgres:123@localhost:5445/postgres" >> .env
 
             # export environment variables
             export $(cat .env)

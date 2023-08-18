@@ -1,5 +1,4 @@
 use sqlx::{FromRow, PgPool};
-use uuid::Uuid;
 
 pub mod commands;
 
@@ -27,7 +26,7 @@ pub struct ReactionUser {
 
 #[derive(Debug, FromRow)]
 pub struct ReactionRole {
-    pub id: Uuid,
+    pub id: i32,
     #[sqlx(flatten)]
     pub reaction_user: ReactionUser,
     pub message_link: String,
@@ -37,7 +36,7 @@ pub struct ReactionRole {
 
 #[derive(Debug, FromRow)]
 pub struct ReturnReactionId {
-    pub id: Uuid,
+    pub id: i32,
 }
 
 #[derive(Debug, FromRow)]

@@ -1,7 +1,6 @@
 use crate::EmojiType;
 use crate::ReturnReactionId;
 use poise::serenity_prelude::{self as serenity, ArgumentConvert, Emoji, ReactionType};
-use uuid::Uuid;
 
 use crate::{Context, Error};
 
@@ -46,11 +45,14 @@ pub async fn add_reaction_role(
 
     let message_link = msg.link_ensured(&ctx).await;
 
+    tracing::info!("message link: {}", message_link);
+
     if matches!(reaction.emoji, ReactionType::Unicode(_)) {
+        tracing::info!("adding reaction emoji: {}", reaction.emoji.to_string());
+
         let reaction_roles_id = sqlx::query_as::<sqlx::Postgres, ReturnReactionId>(
-            r#"INSERT INTO reaction_roles ( id, message_link, emoji_type, reaction_emoji_name, role_id ) VALUES ( $1, $2, $3, $4, $5 ) RETURNING id"#
+            r#"INSERT INTO reaction_roles ( message_link, emoji_type, reaction_emoji_name, role_id ) VALUES ( $1, $2, $3, $4 ) RETURNING id"#
         )
-        .bind(Uuid::now_v7())
         .bind(message_link.clone())
         .bind(EmojiType::Unicode)
         .bind(reaction.emoji.to_string())
@@ -62,11 +64,11 @@ pub async fn add_reaction_role(
             reaction_roles_id.id
         );
     } else {
+        tracing::info!("adding reaction emoji: {}", reaction.emoji.to_string());
         let message_link = msg.link_ensured(&ctx).await;
         let reaction_roles_id = sqlx::query_as::<sqlx::Postgres, ReturnReactionId>(
-            r#"INSERT INTO reaction_roles ( id, message_link, emoji_type, reaction_emoji_name, reaction_emoji_id, role_id ) VALUES ( $1, $2, $3, $4, $5, $6 ) RETURNING id"#,
+            r#"INSERT INTO reaction_roles ( message_link, emoji_type, reaction_emoji_name, reaction_emoji_id, role_id ) VALUES ( $1, $2, $3, $4, $5 ) RETURNING id"#,
         )
-        .bind(Uuid::now_v7())
         .bind(message_link)
         .bind(EmojiType::Emote)
         .bind(reaction.emoji.to_string())

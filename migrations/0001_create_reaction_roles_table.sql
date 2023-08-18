@@ -6,7 +6,7 @@ DO $$
     END$$;
 
 CREATE TABLE IF NOT EXISTS reaction_roles (
-    id UUID PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     message_link TEXT NOT NULL,
     emoji_type emoji_types NOT NULL,
     reaction_emoji_id TEXT,

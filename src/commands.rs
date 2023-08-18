@@ -106,11 +106,10 @@ pub async fn list_reaction_role(ctx: Context<'_>, msg: serenity::Message) -> Res
 
     ctx.defer_ephemeral().await?;
 
-    let reaction_roles = sqlx::query_as!(
-        ReactionRole,
-        r#"SELECT rr.id, rr.message_link, rr.role_id, rr.reaction_emoji_name, rr.reaction_emoji_id FROM reaction_roles rr WHERE rr.message_link = $1"#,
-        message_link
+    let reaction_roles = sqlx::query_as::<sqlx::Postgres, ReactionRole>(
+        r#"SELECT rr.id, rr.message_link, rr.role_id, rr.reaction_emoji_name, rr.reaction_emoji_id FROM reaction_roles rr WHERE rr.message_link = $1"#
     )
+    .bind(message_link)
     .fetch_all(&pool)
     .await?;
 

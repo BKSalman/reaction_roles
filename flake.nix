@@ -41,13 +41,7 @@
           packages = [
             # shuttle deployment
             cargo-shuttle
-            
-            # general utilities
-            exa
-            fd
-            bat
-            lazygit
-            
+
             # database
             postgresql
             docker
@@ -73,15 +67,9 @@
           ];
 
           shellHook = ''
-            # cool aliases
-            alias ls='exa --time-style=long-iso --group-directories-first --icons --no-permissions --no-user -l --git'
-            alias ll="exa --time-style=long-iso --group-directories-first --icons -la"
-            alias find=fd
-            alias cat=bat
-
             # run dev servers
-            alias lcr='RUST_LOG=musawarah=debug,tower=debug cargo run'
-            alias lcw='RUST_LOG=musawarah=debug,tower=debug cargo watch -x run'
+            alias lcr='RUST_LOG=reaction_roles=debug,tower=debug cargo run'
+            alias lcw='RUST_LOG=reaction_roles=debug,tower=debug cargo watch -x run'
 
             # start dev database if available, if not create, and run it on port 5445
             docker start reaction-roles-dev || \

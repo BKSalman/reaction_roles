@@ -2,6 +2,7 @@ use crate::EmojiType;
 use crate::ReactionRole;
 use crate::ReturnReactionId;
 use poise::serenity_prelude::{self as serenity, ArgumentConvert, Emoji, ReactionType};
+use poise::CreateReply;
 
 use crate::{Context, Error};
 
@@ -26,7 +27,7 @@ pub async fn add_reaction_role(
         Some(_unicode_emoji) => (ReactionType::Unicode(emoji.clone()), None),
         None => {
             let emoji = Emoji::convert(
-                &ctx.serenity_context(),
+                ctx.serenity_context(),
                 ctx.guild_id(),
                 Some(ctx.channel_id()),
                 &emoji,
@@ -45,7 +46,7 @@ pub async fn add_reaction_role(
 
     let reaction = msg.react(ctx, reaction_type).await?;
 
-    let message_link = msg.link_ensured(&ctx).await;
+    let message_link = msg.link();
 
     tracing::info!("message link: {}", message_link);
 
@@ -67,7 +68,7 @@ pub async fn add_reaction_role(
         );
     } else {
         tracing::info!("adding reaction emoji: {}", reaction.emoji.to_string());
-        let message_link = msg.link_ensured(&ctx).await;
+        let message_link = msg.link();
         let reaction_roles_id = sqlx::query_as::<sqlx::Postgres, ReturnReactionId>(
             r#"INSERT INTO reaction_roles ( message_link, emoji_type, reaction_emoji_name, reaction_emoji_id, role_id ) VALUES ( $1, $2, $3, $4, $5 ) RETURNING id"#,
         )
@@ -84,12 +85,10 @@ pub async fn add_reaction_role(
         );
     }
 
-    ctx.send(move |r| {
-        r.reply(true).content(format!(
-            "added role: {role} with emoji: {emoji} to message: {}",
-            message_link
-        ))
-    })
+    ctx.send(CreateReply::default().reply(true).content(format!(
+        "added role: {role} with emoji: {emoji} to message: {}",
+        message_link
+    )))
     .await?;
 
     Ok(())
@@ -100,7 +99,7 @@ pub async fn add_reaction_role(
 pub async fn list_reaction_role(ctx: Context<'_>, msg: serenity::Message) -> Result<(), Error> {
     let pool = ctx.data().db_pool.clone();
 
-    let message_link = msg.link_ensured(&ctx).await;
+    let message_link = msg.link();
 
     tracing::info!("message link: {}", message_link);
 
@@ -113,26 +112,29 @@ pub async fn list_reaction_role(ctx: Context<'_>, msg: serenity::Message) -> Res
     .fetch_all(&pool)
     .await?;
 
-    ctx.send(move |r| {
-        let message = reaction_roles
-            .into_iter()
-            .map(|rr| {
-                format!(
-                    "- reaction {emoji} for <@&{role_id}>",
-                    emoji = rr.reaction_emoji_name,
-                    role_id = rr.role_id,
-                )
-            })
-            .collect::<Vec<String>>()
-            .join("\n");
+    let message = reaction_roles
+        .into_iter()
+        .map(|rr| {
+            format!(
+                "- reaction {emoji} for <@&{role_id}>",
+                emoji = rr.reaction_emoji_name,
+                role_id = rr.role_id,
+            )
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
 
-        if message.is_empty() {
-            r.reply(true).content("Message has no reaction roles")
-        } else {
-            r.reply(true).content(message)
-        }
-    })
-    .await?;
+    if message.is_empty() {
+        ctx.send(
+            CreateReply::default()
+                .reply(true)
+                .content("Message has no reaction roles"),
+        )
+        .await?;
+    } else {
+        ctx.send(CreateReply::default().reply(true).content(message))
+            .await?;
+    }
 
     Ok(())
 }

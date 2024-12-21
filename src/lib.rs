@@ -6,7 +6,7 @@ pub struct Data {
     pub db_pool: PgPool,
 }
 
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
+pub type Error = anyhow::Error;
 pub type Context<'a> = poise::Context<'a, Data, Error>;
 
 #[derive(sqlx::Type, Debug)]

@@ -7,16 +7,14 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-shuttle-runtime = "0.23.0"
-anyhow = "1.0.72"
-serenity = { version = "0.11.6", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
-shuttle-secrets = "0.23.0"
-shuttle-serenity = "0.23.0"
-tokio = "1.31.0"
+shuttle-runtime = "0.49.0"
+anyhow = "1"
+serenity = { version = "0.12.4", default-features = false, features = ["client", "gateway", "rustls_backend", "model"] }
+shuttle-serenity = "0.49.0"
 tracing = "0.1.37"
-poise = "0.5.5"
-shuttle-poise = "0.23.0"
-emojis = "0.6.0"
-sqlx = { version = "0.7.1", features = ["postgres", "runtime-tokio-rustls"] }
-shuttle-shared-db = { version = "0.23.0", features = ["sqlx", "postgres-rustls"] }
+poise = "0.6.1"
+shuttle-poise = "0.37.0"
+emojis = "0.6.4"
+sqlx = { version = "0.8.2", features = ["postgres", "runtime-tokio-rustls"] }
+shuttle-shared-db = { version = "0.49.0", features = ["sqlx", "postgres"] }
 chrono = "0.4.26"

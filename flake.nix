@@ -12,6 +12,7 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     flake-utils,
     rust-overlay,
@@ -93,5 +94,9 @@
         };
 
       formatter.x86_64-linux = legacyPackages.${system}.nixpkgs-fmt;
-    });
+    }) // {
+        overlay = final: prev: {
+          inherit (self.packages.${final.system}) reaction-roles;
+        };
+      };
 }

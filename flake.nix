@@ -5,41 +5,70 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
+    crane = {
+      url = "github:ipetkov/crane";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = {nixpkgs, flake-utils, rust-overlay, ...}:
+  outputs = {
+    nixpkgs,
+    flake-utils,
+    rust-overlay,
+    crane,
+    ...
+  }:
     flake-utils.lib.eachDefaultSystem (system: 
       let 
+        craneLib = (crane.mkLib nixpkgs.legacyPackages.${system});
+
         pkgs = import nixpkgs { inherit system; overlays = [ rust-overlay.overlays.default ]; };
+
+        buildInputs = with pkgs; [
+          # needed for openssl dependant packages
+          openssl
+          pkg-config
+        ];
+
+        cargoArtifacts = craneLib.buildDepsOnly ({
+          src = craneLib.cleanCargoSource (craneLib.path ./.);
+          inherit buildInputs;
+          pname = "reaction-roles";
+        });
       in
     with pkgs; {
+        packages = rec {
+          reaction-roles = craneLib.buildPackage {
+            src = craneLib.path ./.;
+
+            inherit buildInputs cargoArtifacts;
+          };
+
+          default = reaction-roles;
+        };
+
       devShell = mkShell.override {
           stdenv = pkgs.stdenvAdapters.useMoldLinker pkgs.clangStdenv;
         } {
-          packages = [
-            # shuttle deployment
-            cargo-shuttle
+          inherit buildInputs;
 
-            # database
-            postgresql
-            docker
-          ];
-          
-          nativeBuildInputs = [
-          ];
-          
-          buildInputs = [
+          packages = [
             # backend
             (rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" "rust-analyzer" ];
             })
             diesel-cli
+
             # auto reload server on save
             # cargo watch -x run
             cargo-watch
-            # needed for openssl dependant packages
-            openssl
-            pkg-config
+
+            # database
+            postgresql
+            docker
+          ];
+
+          nativeBuildInputs = [
           ];
 
           shellHook = ''
